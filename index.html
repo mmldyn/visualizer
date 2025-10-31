@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizer Login</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Inter (dihapus sementara, utamakan Cocon) -->
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    <style>
+
+        h1 { 
+            font-family: 'Cocon Regular', sans-serif;
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('font/CoconRegularFont.woff') format('woff');
+        }
+        /* [BARU] Styling untuk pesan error/sukses */
+        .message-box {
+            display: none; /* Sembunyikan secara default */
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .message-box.error {
+            background-color: #fecaca; /* red-200 */
+            color: #b91c1c; /* red-700 */
+        }
+        .message-box.success {
+             background-color: #d1fae5; /* green-200 */
+             color: #047857; /* green-700 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-[#3a2d71] to-[#6c46ae] min-h-screen flex items-center justify-center p-4 md:p-8">
+
+    <!-- Kontainer Utama -->
+    <div class="w-full max-w-sm mx-auto text-center">
+        
+        <!-- Judul Aplikasi -->
+        <h1 class="text-white text-4xl sm:text-5xl font-bold tracking-widest mb-10 md:mb-16 mt-8 sm:mt-0">VISUALIZER</h1>
+        
+        <!-- Kartu Form Login -->
+        <div class="relative bg-white rounded-3xl shadow-lg pt-16 pb-12 px-6 sm:px-8 max-w-sm mx-auto">
+            
+            <!-- Ikon Avatar/Lingkaran di Atas -->
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+                <div class="w-[calc(100%-8px)] h-[calc(100%-8px)] rounded-full bg-white relative z-10"></div>
+                <div class="absolute inset-0 rounded-full" style="background: linear-gradient(to bottom, #3a2d71, #6c46ae);"></div>
+            </div>
+
+            <!-- Form -->
+            <!-- [PERUBAHAN] Hapus action="#" -->
+            <form id="auth-form"> 
+                <div class="space-y-8 sm:space-y-10">
+                    <!-- [PERUBAHAN] Input Email -->
+                    <div>
+                        <input type="email" id="email-input" placeholder="Email" required class="w-full bg-transparent border-b-2 border-gray-300 focus:border-[#6c46ae] focus:outline-none py-2 text-lg text-gray-700 transition-colors duration-300">
+                    </div>
+                    <!-- [PERUBAHAN] Input Password -->
+                    <div>
+                        <input type="password" id="password-input" placeholder="Password" required class="w-full bg-transparent border-b-2 border-gray-300 focus:border-[#6c46ae] focus:outline-none py-2 text-lg text-gray-700 transition-colors duration-300">
+                    </div>
+                </div>
+
+                <!-- [BARU] Container untuk pesan error/sukses -->
+                 <div id="message-container" class="message-box"></div>
+
+                <!-- Tombol Aksi (diubah menjadi button) -->
+                <div class="mt-12 sm:mt-16 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <!-- [PERUBAHAN] Tombol Sign Up -->
+                    <button type="button" id="signup-button" class="w-full sm:w-auto px-6 py-2 text-center border-2 border-[#6c46ae] text-[#6c46ae] font-semibold rounded-full hover:bg-[#6c46ae] hover:text-white transition-all duration-300">
+                        Sign up
+                    </button>
+                    <!-- [PERUBAHAN] Tombol Login -->
+                    <button type="button" id="login-button" class="w-full sm:w-auto px-8 py-2 text-center bg-[#6c46ae] text-white font-semibold rounded-full shadow-md hover:bg-[#5a3a93] transition-all duration-300">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- [BARU] Firebase SDK dan Logika Autentikasi -->
+    <script type="module">
+        // Import fungsi Firebase yang dibutuhkan
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword,
+            onAuthStateChanged // Untuk cek status login
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Setup Firebase (MANUAL) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzI4qdeeiVT7FXnN0aEhOEOuchLmy_I6A", 
+            authDomain: "visualizer-811a2.firebaseapp.com",   
+            projectId: "visualizer-811a2",
+            storageBucket: "visualizer-811a2.appspot.com",   
+            messagingSenderId: "37323047025",
+            appId: "1:37323047025:web:4717b1b767ce4470769bd0",
+            measurementId: "G-2BYGT2DZW9"
+        };
+        // --- Akhir Setup Manual ---
+
+        // Inisialisasi Firebase
+        let app;
+        let auth;
+        try {
+             app = initializeApp(firebaseConfig);
+             auth = getAuth(app);
+             console.log("Firebase Initialized");
+        } catch (error) {
+             console.error("Firebase Initialization Failed:", error);
+             // Tampilkan error ke pengguna jika init gagal
+             const messageContainer = document.getElementById('message-container');
+             showMessage("Initialization Error: Could not connect to Firebase. Please check console.", true);
+        }
+
+
+        // Dapatkan elemen-elemen form
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const signupButton = document.getElementById('signup-button');
+        const loginButton = document.getElementById('login-button');
+        const messageContainer = document.getElementById('message-container');
+
+        // Fungsi untuk menampilkan pesan
+        function showMessage(message, isError = false) {
+            if (!messageContainer) return;
+            messageContainer.textContent = message;
+            messageContainer.style.display = 'block';
+            if (isError) {
+                messageContainer.classList.remove('success');
+                messageContainer.classList.add('error');
+            } else {
+                messageContainer.classList.remove('error');
+                messageContainer.classList.add('success');
+            }
+        }
+        function hideMessage() {
+             if (messageContainer) messageContainer.style.display = 'none';
+        }
+
+        // --- Fungsi Sign Up ---
+        async function handleSignUp() {
+            hideMessage(); // Sembunyikan pesan sebelumnya
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showMessage("Please enter both email and password.", true);
+                return;
+            }
+            // Minimal 6 karakter password (Firebase requirement)
+            if (password.length < 6) {
+                showMessage("Password should be at least 6 characters.", true);
+                return;
+            }
+
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // Sign up berhasil
+                console.log("Sign up successful:", userCredential.user);
+                showMessage("Sign up successful! Redirecting...", false);
+                // Redirect ke dashboard setelah delay singkat
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                // Tangani error sign up
+                console.error("Sign up error:", error);
+                let errorMessage = "An error occurred during sign up.";
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = "This email is already registered.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Please enter a valid email address.";
+                } else if (error.code === 'auth/weak-password') {
+                     errorMessage = "Password is too weak.";
+                }
+                showMessage(errorMessage, true);
+            }
+        }
+
+        // --- Fungsi Login ---
+        async function handleLogin() {
+            hideMessage();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+             if (!email || !password) {
+                showMessage("Please enter both email and password.", true);
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                // Login berhasil
+                console.log("Login successful:", userCredential.user);
+                 showMessage("Login successful! Redirecting...", false);
+                // Redirect ke dashboard
+                 setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                // Tangani error login
+                console.error("Login error:", error);
+                 let errorMessage = "An error occurred during login.";
+                 // Kode error Firebase v9+ berbeda sedikit
+                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                     errorMessage = "Invalid email or password.";
+                 } else if (error.code === 'auth/invalid-email') {
+                     errorMessage = "Please enter a valid email address.";
+                 }
+                 showMessage(errorMessage, true);
+            }
+        }
+
+        // --- Cek Status Login Saat Halaman Dimuat ---
+        // (Opsional tapi bagus) Jika pengguna sudah login, langsung arahkan ke dashboard
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // Pengguna sudah login, arahkan ke dashboard
+            console.log("User already logged in, redirecting...");
+            // Cek agar tidak redirect jika sudah di dashboard (jika script ini dipakai di halaman lain)
+            if (window.location.pathname !== '/dashboard.html' && window.location.pathname !== '/dashboard') {
+                 // window.location.href = 'dashboard.html';
+                 // Untuk sementara nonaktifkan redirect otomatis agar tidak mengganggu testing
+            }
+          } else {
+            // Pengguna belum login
+            console.log("User is logged out.");
+          }
+        });
+
+        // --- Tambahkan Event Listeners ---
+        if (signupButton && loginButton) {
+             signupButton.addEventListener('click', handleSignUp);
+             loginButton.addEventListener('click', handleLogin);
+        } else {
+             console.error("Sign up or Login button not found.");
+        }
+
+        // Juga tambahkan listener jika menekan Enter di form
+        const authForm = document.getElementById('auth-form');
+         if (authForm) {
+             authForm.addEventListener('submit', (event) => {
+                 event.preventDefault(); // Mencegah submit form bawaan
+                 handleLogin(); // Default action saat Enter adalah login
+             });
+         }
+
+    </script>
+
+</body>
+</html>
+

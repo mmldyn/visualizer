@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Proyek Fotografi</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    <script src="footer/loader.js"></script>
+
+    <style>
+        /* Menggunakan font Inter sebagai default */
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; /* Warna background sedikit keunguan seperti di gambar */
+        }
+
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('font/CoconRegularFont.woff') format('woff');
+        }
+        /* Style kustom untuk bayangan pada bilah navigasi bawah */
+        .bottom-nav-shadow {
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        }
+        /* -- CSS Animasi -- */
+        /* Mendefinisikan keyframes untuk animasi fade-in dan slide-up */
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Kelas untuk kartu objective, awalnya disembunyikan */
+        .objective-card {
+            opacity: 0;
+        }
+        /* Kelas utilitas untuk menerapkan animasi */
+        .animate-load-in {
+            animation: fadeInSlideUp 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto max-w-lg min-h-screen bg-white md:shadow-lg md:my-4 md:rounded-lg">
+        <div class="p-6 pb-28"> <!-- Padding bawah untuk memberi ruang bagi bilah navigasi bawah -->
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-6">
+                <!-- Ikon Menu (Hamburger) -->
+                <button class="p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+                <h1 class="text-xl font-bold text-gray-700">Project</h1>
+                <!-- Ikon Pengguna -->
+                <button class="p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </button>
+            </header>
+
+            <!-- Konten Utama Halaman Objectives -->
+            <main>
+                <h2 class="text-3xl font-bold mb-4">Objectives</h2>
+                <div class="space-y-4">
+                    <!-- Kartu Objective 1 -->
+                    <div class="objective-card bg-violet-100/60 p-5 rounded-2xl">
+                        <h3 class="font-bold text-lg">Rule of Thirds</h3>
+                        <p class="text-gray-500 text-sm mt-1 mb-4">5 foto natural dan eksploratif dengan penerapan Rule of Thirds</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Add Files</button>
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Use Camera</button>
+                        </div>
+                    </div>
+
+                    <!-- Kartu Objective 2 -->
+                    <div class="objective-card bg-violet-100/60 p-5 rounded-2xl">
+                        <h3 class="font-bold text-lg">Golden Section</h3>
+                        <p class="text-gray-500 text-sm mt-1 mb-4">3 foto natural dan eksploratif dengan penerapan Golden Section</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Add Files</button>
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Use Camera</button>
+                        </div>
+                    </div>
+
+                    <!-- Kartu Objective 3 -->
+                    <div class="objective-card bg-violet-100/60 p-5 rounded-2xl">
+                        <h3 class="font-bold text-lg">Symmetry</h3>
+                        <p class="text-gray-500 text-sm mt-1 mb-4">2 foto natural dan eksploratif dengan penerapan Symmetry</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Add Files</button>
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Use Camera</button>
+                        </div>
+                    </div>
+
+                    <!-- Kartu Objective 4 -->
+                    <div class="objective-card bg-violet-100/60 p-5 rounded-2xl">
+                        <h3 class="font-bold text-lg">Rule of Thirds</h3>
+                        <p class="text-gray-500 text-sm mt-1 mb-4">5 foto natural dan eksploratif dengan penerapan Rule of Thirds</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Add Files</button>
+                            <button class="bg-indigo-700 text-white font-semibold py-2.5 rounded-lg">Use Camera</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Bawah -->
+                <div class="mt-8 space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="flex items-center justify-center gap-2 w-full bg-indigo-100 text-indigo-700 font-semibold py-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" />
+                            </svg>
+                            AI Feedback
+                        </button>
+                        <button class="flex items-center justify-center gap-2 w-full bg-indigo-100 text-indigo-700 font-semibold py-3 rounded-full">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                            </svg>
+                            Re-upload
+                        </button>
+                    </div>
+                    <button class="w-full bg-indigo-700 text-white font-bold py-4 rounded-full shadow-lg shadow-indigo-500/50">Finish Project</button>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div id="footer-placeholder"></div>
+    
+    <!-- -- JavaScript untuk Animasi -- -->
+    <script>
+        // Menjalankan script setelah seluruh konten halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            // Memilih semua elemen dengan kelas 'objective-card'
+            const objectiveCards = document.querySelectorAll('.objective-card');
+            
+            // Melakukan iterasi pada setiap kartu untuk memberikan animasi dengan jeda
+            objectiveCards.forEach((card, index) => {
+                // Menggunakan setTimeout untuk membuat jeda waktu antar animasi
+                setTimeout(() => {
+                    // Menambahkan kelas 'animate-load-in' untuk memicu animasi
+                    card.classList.add('animate-load-in');
+                }, index * 150); // Jeda 150ms dikalikan dengan urutan kartu
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFooter('nav-center');
+        });
+        
+    </script>
+</body>
+</html>
+

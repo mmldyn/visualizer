@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    
+    <!-- Memuat script footer di <head> -->
+    <script src="footer/loader.js"></script> 
+
+    <style>
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; 
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('font/CoconRegularFont.woff') format('woff');
+        }
+        /* Custom colors */
+        .main-purple { color: #6F4AB0; }
+        .bg-main-purple { background-color: #6F4AB0; }
+        .text-dark-purple { color: #3b1f7a; }
+        .bg-light-purple { background-color: #EAE6F9; }
+
+        /* [BARU] Animasi fade-in untuk elemen */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* [BARU] Styling Kartu Course */
+        .course-card {
+            background-color: white;
+            border-radius: 1rem; /* rounded-2xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            overflow: hidden; /* Untuk merapikan gambar */
+            transition: all 0.3s ease-in-out;
+            transform: scale(1);
+        }
+        .course-card:hover {
+            transform: scale(1.03); /* Efek scale saat hover */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+        .course-card-title {
+            font-weight: 700; /* font-bold */
+            font-size: 1.25rem; /* text-xl */
+            color: #3b1f7a; /* text-dark-purple */
+        }
+        .course-card-desc {
+            color: #6b7280; /* text-gray-500 */
+            font-size: 0.875rem; /* text-sm */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+    </style>
+</head>
+<body class="text-dark-purple">
+
+    <div class="container mx-auto max-w-lg pb-28">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 fade-in" style="animation-delay: 0.1s;">
+            <!-- Tombol kembali ke dashboard utama -->
+            <a href="dashboard.html" class="p-2 -ml-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 main-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="font-bold text-lg main-purple">Available Courses</h1>
+            <div class="w-6"></div> <!-- Placeholder untuk menyeimbangkan header -->
+        </header>
+
+        <!-- Konten Daftar Course -->
+        <main class="px-6 space-y-6">
+
+            <!-- Kartu Course 1: Fotografi Dasar -->
+            <a href="./dasar-courses.html" class="block course-card fade-in" style="animation-delay: 0.2s;">
+                <!-- Gambar placeholder untuk course -->
+                <img src="./assets/dasar.png" alt="Fotografi Dasar" class="w-full h-40 object-cover">
+                <div class="p-5">
+                    <h3 class="course-card-title">Fotografi Dasar</h3>
+                    <p class="course-card-desc">Pelajari fundamental fotografi, mulai dari exposure triangle (ISO, Aperture, Shutter Speed) hingga komposisi dasar.</p>
+                </div>
+            </a>
+
+            <!-- Kartu Course 2: Fotografi Aplikatif -->
+            <a href="./apl-courses.html" class="block course-card fade-in" style="animation-delay: 0.3s;">
+                <!-- Gambar placeholder untuk course -->
+                <img src="./assets/apl.png" alt="Fotografi Aplikatif" class="w-full h-40 object-cover">
+                <div class="p-5">
+                    <h3 class="course-card-title">Fotografi Aplikatif</h3>
+                    <p class="course-card-desc">Terapkan skill Anda dalam studi kasus nyata, termasuk fotografi produk, potret, dan event. (Link ini masih mengarah ke course_detail.html)</p>
+                </div>
+            </a>
+
+            <!-- Kartu Course 3: Placeholder (jika perlu) -->
+            <a href="#" class="block course-card fade-in" style="animation-delay: 0.4s;">
+                <!-- Gambar placeholder untuk course -->
+                <img src="./assets/vedt.png" alt="Coming Soon" class="w-full h-40 object-cover">
+                <div class="p-5">
+                    <h3 class="course-card-title">Video Editing 101</h3>
+                    <p class="course-card-desc">Segera hadir. Pelajari dasar-dasar editing video untuk pemula.</p>
+                </div>
+            </a>
+
+        </main>
+    </div>
+
+    <!-- Placeholder untuk footer -->
+    <div id="footer-placeholder"></div>
+
+    <script type="module">
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Panggil loader footer
+            if (typeof loadFooter === 'function') {
+                loadFooter('nav-course'); // Tandai 'course' (topi wisuda) sebagai aktif
+            } else {
+                console.error("footer-loader.js tidak ter-load dengan benar.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing...</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    
+    <style>
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background: linear-gradient(to bottom, #3a2d71, #6F4AB0);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+        /* Animasi titik loading */
+        .loading-dots div {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            margin: 0 5px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loading-dots div:nth-child(1) { animation-delay: -0.32s; background-color: rgba(0,0,0,0.3); }
+        .loading-dots div:nth-child(2) { animation-delay: -0.16s; background-color: rgba(255,255,255,0.4); }
+        .loading-dots div:nth-child(3) { background-color: rgba(255,255,255,0.7); }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1.0); opacity: 1; }
+        }
+        /* Animasi teks fade in/out */
+        .status-text {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute; /* Agar teks tumpang tindih */
+            text-align: center;
+            width: 100%;
+            top: 60%; /* Posisi di bawah titik */
+        }
+        .status-text.visible {
+            opacity: 1;
+        }
+        /* Styling untuk pesan error */
+        #status-error {
+             color: #fecaca; /* Merah muda */
+             font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex flex-col items-center">
+        <div class="loading-dots flex mb-8">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="relative h-8 w-full"> <!-- Kontainer untuk teks -->
+            <p id="status-uploading" class="status-text visible">Uploading...</p>
+            <p id="status-analyzing" class="status-text">Analyzing image...</p>
+            <p id="status-generating" class="status-text">Generating AI feedback...</p>
+            <p id="status-saving" class="status-text">Saving results...</p>
+            <p id="status-error" class="status-text hidden">Error occurred!</p> 
+        </div>
+    </div>
+
+    <!-- Firebase SDK (diperlukan untuk mendapatkan userId dan appId jika ada) -->
+    <script type="module">
+        // Import fungsi yang diperlukan dari SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; 
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; 
+
+        // Definisikan variabel elemen di luar
+        let statusError; 
+        let allStatusElements;
+
+        function displayError(message) {
+            console.error("Error:", message); 
+            if (statusError) { 
+                statusError.textContent = message;
+                statusError.classList.add('visible');
+                statusError.classList.remove('hidden');
+            }
+            if(allStatusElements){
+                allStatusElements.forEach(el => {
+                    if(el.id !== 'status-error') {
+                       el.classList.remove('visible');
+                    }
+                }); 
+            }
+        }
+
+        // Jalankan kode utama setelah DOM siap
+        document.addEventListener('DOMContentLoaded', async () => {
+            statusError = document.getElementById('status-error'); 
+            allStatusElements = document.querySelectorAll('.status-text'); 
+
+            // --- Setup Firebase (MANUAL) ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyCzI4qdeeiVT7FXnN0aEhOEOuchLmy_I6A", 
+                authDomain: "visualizer-811a2.firebaseapp.com",   
+                projectId: "visualizer-811a2",
+                storageBucket: "visualizer-811a2.appspot.com",   
+                messagingSenderId: "37323047025",
+                appId: "1:37323047025:web:4717b1b767ce4470769bd0",
+                measurementId: "G-2BYGT2DZW9"
+            };
+            // --- Akhir Setup Manual ---
+
+            if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.authDomain) { 
+                 displayError("Firebase Config Error: Manual config is incomplete or invalid (apiKey, projectId, or authDomain missing).");
+                 return;
+            }
+
+            try { 
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app); 
+    
+                // --- Fungsi Utama ---
+                async function processAndUpload() {
+                    const statusUploading = document.getElementById('status-uploading');
+                    const statusAnalyzing = document.getElementById('status-analyzing');
+                    const statusGenerating = document.getElementById('status-generating');
+                    const statusSaving = document.getElementById('status-saving');
+                    
+                    let currentUser = null;
+    
+                    // Pastikan user sudah login
+                    try {
+                        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        
+                        if (authToken) {
+                            await signInWithCustomToken(auth, authToken);
+                        } else if (!auth.currentUser) { 
+                            await signInAnonymously(auth); 
+                        }
+                        currentUser = auth.currentUser;
+                        if (!currentUser) throw new Error("Authentication could not establish a user session."); 
+                    } catch (error) {
+                         if (error.code && error.code.startsWith('auth/')) {
+                             displayError(`Auth Error: ${error.message} (Code: ${error.code}). Please double-check manual Firebase config and ensure Anonymous Sign-in is enabled in Firebase Console.`); 
+                         } else {
+                             displayError(`Authentication/Initialization Error: ${error.message}`); 
+                         }
+                         return; 
+                    }
+    
+                    const userId = currentUser.uid;
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
+    
+                    // Ambil data dari sessionStorage
+                    const imageData = sessionStorage.getItem('uploadedImage');
+                    const compositionChoice = sessionStorage.getItem('compositionChoice');
+    
+                    if (!imageData || !compositionChoice) {
+                        displayError("Missing image data or composition choice in storage.");
+                        return; 
+                    }
+    
+                    // Pengaturan Teks Loading
+                    const statusMessages = [statusUploading, statusAnalyzing, statusGenerating, statusSaving];
+                    let currentStatusIndex = 0;
+                    let statusInterval; 
+    
+                    function showNextStatus() {
+                        if (statusError) { 
+                           statusError.classList.add('hidden'); 
+                           statusError.classList.remove('visible'); 
+                        }
+                        
+                        statusMessages.forEach((el, index) => {
+                            if (el && index === currentStatusIndex) { 
+                                el.classList.add('visible');
+                            } else if (el) {
+                                el.classList.remove('visible');
+                            }
+                        });
+                        if (currentStatusIndex < statusMessages.length -1) {
+                            currentStatusIndex++;
+                        }
+                    }
+                    
+                    showNextStatus(); 
+                    statusInterval = setInterval(() => {
+                        if (currentStatusIndex >= statusMessages.length -1 || (statusError && !statusError.classList.contains('hidden'))) { 
+                            clearInterval(statusInterval);
+                        } else {
+                            showNextStatus();
+                        }
+                    }, 1800); 
+    
+                    // Kirim data ke server Python
+                    try {
+                        // ==================================================================
+                        // [PERUBAHAN PENTING]
+                        // Ganti URL ini dengan URL dari server Render Anda
+                        // Pastikan Anda menambahkan '/process-image' di akhir URL Render Anda.
+                        // ==================================================================
+                        const cloudFunctionUrl = "https://visualizer-be-j5kn.onrender.com/process-image";
+                        
+                        // const serverUrl = 'http://127.0.0.1:5000/process-image'; // (Baris ini tidak dipakai lagi)
+                        console.log(`Sending data to ${cloudFunctionUrl}`); 
+                        
+                        const response = await fetch(cloudFunctionUrl, { // [PERUBAHAN] Menggunakan URL cloud
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                image: imageData,
+                                composition: compositionChoice,
+                                appId: appId, 
+                                userId: userId  
+                            }),
+                            signal: AbortSignal.timeout(30000) // [PERUBAHAN] Timeout dinaikkan jadi 30 detik untuk server gratis
+                        });
+    
+                        clearInterval(statusInterval); 
+                        currentStatusIndex = statusMessages.length - 1; 
+                        showNextStatus(); 
+    
+                        const result = await response.json();
+    
+                        if (response.ok && result.status === 'success') {
+                            console.log('Server response:', result.message);
+                            sessionStorage.removeItem('uploadedImage');
+                            sessionStorage.removeItem('compositionChoice');
+                            setTimeout(() => {
+                                window.location.href = 'success.html'; 
+                            }, 800); 
+                        } else {
+                            const errorMessage = result.message || result.error || `Server responded with status ${response.status}`;
+                            displayError(`Server Error: ${errorMessage}`);
+                        }
+                    } catch (error) {
+                         clearInterval(statusInterval); 
+                         if (error.name === 'AbortError') {
+                             displayError("Request timed out. Server (Render) might be starting up, try again in 30s.");
+                         } else if (error instanceof TypeError) {
+                              displayError("Network Error: Cannot connect to server. Check URL.");
+                         }
+                         else {
+                             displayError(`Fetch Error: ${error.message}`);
+                         }
+                    }
+                } // Akhir fungsi processAndUpload
+    
+                // Panggil fungsi utama
+                await processAndUpload(); 
+            
+            } catch (initError) {
+                 // Error ini akan muncul jika initializeApp gagal atau getAuth gagal
+                 displayError(`Firebase Initialization Error: ${initError.message}. Check manual config details.`);
+            }
+
+        }); // Akhir DOMContentLoaded
+    </script>
+</body>
+</html>
+

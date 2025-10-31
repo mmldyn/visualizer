@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit File</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/v.png">
+    
+    <style>
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #6F4AB0;
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+        .main-purple { color: #6F4AB0; }
+        .bg-main-purple { background-color: #6F4AB0; }
+        .text-dark-purple { color: #3b1f7a; }
+
+        /* [BARU] Animasi fade-in */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Sembunyikan radio button asli */
+        input[type="radio"] {
+            display: none;
+        }
+
+        /* Gaya untuk label radio button (agar terlihat seperti tombol) */
+        input[type="radio"] + label {
+            display: block;
+            background-color: white;
+            color: #3b1f7a;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid white;
+            transform: scale(1.0); /* [BARU] Menambahkan skala dasar */
+        }
+
+        /* [PERUBAHAN] Efek hover untuk tombol radio */
+        input[type="radio"] + label:hover {
+            background-color: #f4f0ff; /* Sedikit lebih gelap */
+            border-color: #7c5bbd;
+            transform: scale(1.05); /* [BARU] Menambahkan skala saat hover */
+        }
+
+        /* Gaya saat radio button dipilih */
+        input[type="radio"]:checked + label {
+            background-color: #EAE6F9; /* bg-light-purple */
+            color: #6F4AB0; /* main-purple */
+            border-color: #6F4AB0;
+            position: relative;
+        }
+        
+        /* [PERUBAHAN] Efek hover untuk tombol radio yang TERPILIH */
+        input[type="radio"]:checked + label:hover {
+            background-color: #e0d8f7; /* Sedikit lebih gelap */
+            transform: scale(1.05); /* [BARU] Menambahkan skala saat hover (juga saat checked) */
+        }
+
+        /* Menambahkan ikon centang (mirip dropdown di gambar) */
+        input[type="radio"]:checked + label::after {
+            content: '✔';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: #6F4AB0;
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <div class="container mx-auto max-w-lg min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 text-white fade-in" style="animation-delay: 0.1s;">
+            <a href="upload_file.html" class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="font-bold text-lg">Upload File</h1>
+            <button class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Konten Utama -->
+        <main class="flex-grow flex flex-col px-6">
+            <h2 class="text-2xl font-bold mt-2 fade-in" style="animation-delay: 0.2s;">Image Captured!</h2>
+
+            <!-- Kartu Pratinjau Gambar -->
+            <div class="bg-white text-gray-800 rounded-3xl p-4 mt-4 shadow-lg fade-in" style="animation-delay: 0.3s;">
+                <div class="bg-gray-200 rounded-2xl w-full aspect-video flex items-center justify-center overflow-hidden">
+                    <!-- Gambar akan dimuat di sini oleh JavaScript -->
+                    <img id="image-preview" src="https://placehold.co/400x225/EAE6F9/3b1f7a?text=hasil+foto+ceritanya" alt="Image Preview" class="w-full h-full object-cover">
+                </div>
+                <!-- [PERUBAHAN] Tombol Retake -->
+                <a href="./uploud.html" id="retake-button" 
+                   class="block w-full text-gray-700 font-semibold py-3 rounded-lg mt-4 text-center hover:bg-gray-300 transition-colors"
+                   style="background-color: #D9D9D9;">
+                    Retake
+                </a>
+            </div>
+
+            <!-- Form Pilihan Komposisi -->
+            <form id="submit-form" class="flex-grow flex flex-col mt-8 fade-in" style="animation-delay: 0.4s;">
+                <h3 class="text-xl font-semibold">Where do you want to submit it?</h3>
+                
+                <div class="space-y-3 mt-4">
+                    <!-- Pilihan 1: Rule of Thirds -->
+                    <div>
+                        <input type="radio" id="comp-rot" name="composition" value="Rule of Thirds" checked> <!-- [EDIT] ditambahkan 'checked' default -->
+                        <label for="comp-rot">Rule of Thirds</label>
+                    </div>
+                    <!-- Pilihan 2: Golden Section -->
+                    <div>
+                        <input type="radio" id="comp-golden" name="composition" value="Golden Section">
+                        <label for="comp-golden">Golden Section</label>
+                    </div>
+                    <!-- Pilihan 3: Symmetry -->
+                    <div>
+                        <input type="radio" id="comp-symmetry" name="composition" value="Symmetry">
+                        <label for="comp-symmetry">Symmetry</label>
+                    </div>
+                </div>
+
+                <!-- [PERBAIKAN] Tombol Submit diganti animasinya -->
+                <button href="success.html" type="submit" 
+                        class="w-full text-white font-bold py-3 rounded-lg mt-8 mb-6 
+                               transform scale-100 transition-transform duration-300 hover:scale-105" 
+                        style="background-color: #9688C8;">
+                    Submit
+            </button>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imagePreview = document.getElementById('image-preview');
+            const submitForm = document.getElementById('submit-form');
+            const retakeButton = document.getElementById('retake-button');
+
+            // 1. Muat gambar dari sessionStorage
+            const imageData = sessionStorage.getItem('uploadedImage');
+            if (imageData) {
+                imagePreview.src = imageData;
+            } else {
+                imagePreview.src = "https://placehold.co/400x225/EAE6F9/3b1f7a?text=No+Image+Found";
+                console.log("Tidak ada gambar ditemukan di session storage.");
+            }
+
+            // 2. Hapus gambar dari session saat Retake
+            retakeButton.addEventListener('click', () => {
+                sessionStorage.removeItem('uploadedImage');
+                // [PERBAIKAN] Hapus juga pilihan komposisi jika ada
+                sessionStorage.removeItem('compositionChoice'); 
+            });
+
+            // 3. Fungsikan tombol "Submit"
+            submitForm.addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                
+                // Dapatkan nilai radio button yang dipilih
+                const selectedComposition = document.querySelector('input[name="composition"]:checked');
+                const imageDataForLoading = sessionStorage.getItem('uploadedImage'); // Ambil lagi untuk disimpan
+
+                // [PERBAIKAN] Pastikan gambar dan pilihan ada SEBELUM menyimpan & redirect
+                if (selectedComposition && imageDataForLoading) {
+                    const answer = selectedComposition.value;
+                    
+                    // "Simpan jawaban" ke sessionStorage agar bisa diakses di loading page
+                    console.log('Menyimpan pilihan komposisi:', answer);
+                    sessionStorage.setItem('compositionChoice', answer); 
+                    
+                    // PENTING: Pastikan gambar sudah ada di session sebelum redirect
+                    console.log('Gambar siap dikirim:', imageDataForLoading ? 'Ya' : 'Tidak');
+                    
+                    // Arahkan pengguna ke halaman loading
+                    window.location.href = 'loading.html'; 
+                    
+                } else {
+                    let errorMessage = '';
+                     if (!selectedComposition) errorMessage += 'Silakan pilih salah satu komposisi. ';
+                     if (!imageDataForLoading) errorMessage += 'Data gambar tidak ditemukan. Coba upload ulang.';
+
+                    console.error(errorMessage);
+                    alert(errorMessage); // Beri tahu pengguna apa yang salah
+                }
+            });
+        });
+    </script>
+
+
+</body>
+</html>
+
+
+
+

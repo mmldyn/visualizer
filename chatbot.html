@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Course Chat Bot</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    <script src="footer/loader.js"></script>
+    
+    <style>
+        /* Menggunakan font Inter sebagai default */
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; /* Warna background sedikit keunguan seperti di gambar */
+        }
+
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('font/CoconRegularFont.woff') format('woff');
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto max-w-lg min-h-screen bg-[#E9E3FF] flex flex-col">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 bg-white/30 backdrop-blur-sm sticky top-0">
+            <!-- Ikon Menu (Hamburger) -->
+            <button class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold text-gray-700">COURSE</h1>
+            <!-- Ikon Pengguna -->
+            <button class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4
+ 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Konten Utama Halaman Chat -->
+        <main class="flex-grow p-6">
+            <div class="flex items-start gap-3">
+                <!-- Ikon Chat Bot -->
+                <div class="w-10 h-10 rounded-full bg-indigo-900 flex-shrink-0 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <!-- Gelembung Chat -->
+                <div class="bg-indigo-900 text-white p-4 rounded-b-xl rounded-tr-xl w-full max-w-xs">
+                    <p class="font-semibold mb-3">Chat Bot</p>
+                    <div class="space-y-2">
+                        <div class="h-4 bg-indigo-400 rounded-full w-3/4"></div>
+                        <div class="h-4 bg-indigo-400 rounded-full w-full"></div>
+                        <div class="h-8 bg-indigo-400 rounded-lg w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Input Chat di Bawah -->
+        <footer class="p-4 sticky bottom-0">
+            <div class="bg-indigo-900 rounded-full flex items-center p-2 shadow-lg">
+                <div class="w-8 h-8 rounded-full bg-indigo-400 flex-shrink-0"></div>
+                <input type="text" placeholder="type here" class="bg-transparent text-white placeholder-gray-300 w-full ml-3 focus:outline-none">
+            </div>
+        </footer>
+    </div>
+    
+</body>
+</html>
+

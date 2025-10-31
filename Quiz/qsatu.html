@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Komposisi</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/v.png">
+
+    <style>
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; /* Latar belakang putih keunguan */
+            color: #3b1f7a; /* Warna teks ungu tua default */
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+        .main-purple { color: #6F4AB0; }
+        .bg-main-purple { background-color: #6F4AB0; }
+        .text-dark-purple { color: #3b1f7a; }
+
+        /* Gaya untuk tombol jawaban */
+        .answer-btn {
+            background-color: #6F4AB0; /* bg-main-purple */
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.2s ease-in-out;
+            transform: scale(1); /* Skala dasar */
+        }
+        .answer-btn:hover {
+            background-color: #5a3a93; /* Warna hover lebih gelap */
+            transform: scale(1.03);
+        }
+        .answer-btn.selected {
+            background-color: #EAE6F9; /* bg-light-purple */
+            color: #6F4AB0; /* main-purple */
+            border-color: #6F4AB0;
+            transform: scale(1.03); 
+        }
+         .answer-btn.selected:hover {
+             background-color: #e0d8f7; /* Sedikit lebih gelap */
+             transform: scale(1.05); /* Sedikit lebih besar saat terpilih + hover */
+         }
+
+
+        /* Gaya tombol Next/Finish */
+        .next-btn {
+            background-color: #3b1f7a; /* Ungu sangat tua */
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            transform: scale(1);
+        }
+         .next-btn:disabled {
+             background-color: #a79cca; /* Warna ungu pudar saat disabled */
+             cursor: not-allowed;
+             transform: scale(1); 
+         }
+        .next-btn:not(:disabled):hover {
+            background-color: #2c165a;
+            transform: scale(1.03);
+        }
+
+        /* [PERUBAHAN] Animasi fade-in/out untuk transisi pertanyaan */
+        .fade-in-out {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .fade-in {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body class="text-dark-purple">
+
+    <div class="container mx-auto max-w-lg min-h-screen flex flex-col p-6">
+        
+        <!-- Header Kuis -->
+        <header class="text-center mb-4 fade-in-out fade-in" style="animation-delay: 0.1s;"> <!-- [PERUBAHAN] Tambah kelas fade-in-out -->
+            <h1 class="text-xl font-bold main-purple">Choose The Answer</h1>
+            <p id="question-counter" class="text-gray-500 text-sm">1/5</p>
+        </header>
+
+        <!-- Konten Kuis -->
+        <main class="flex-grow flex flex-col">
+            <!-- [PERUBAHAN] Bungkus elemen pertanyaan dalam div untuk transisi -->
+            <div id="question-content" class="fade-in-out fade-in"> 
+                <!-- Gambar Pertanyaan -->
+                <div class="bg-gray-200 rounded-2xl w-full aspect-video flex items-center justify-center overflow-hidden mb-6 shadow" style="animation-delay: 0.2s;">
+                    <img id="quiz-image" src="https://placehold.co/600x337/eaeaea/ffffff?text=Loading+Image..." alt="Quiz Image" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Teks Pertanyaan -->
+                <p id="question-text" class="text-center font-semibold mb-6" style="animation-delay: 0.3s;">Pada gambar tersebut, teknik komposisi apa yang digunakan?</p>
+
+                <!-- Pilihan Jawaban -->
+                <div id="answer-options" class="space-y-4 mb-8" style="animation-delay: 0.4s;">
+                    <!-- Tombol jawaban akan dimuat oleh JavaScript -->
+                    <button class="answer-btn">Pilihan A</button>
+                    <button class="answer-btn">Pilihan B</button>
+                    <button class="answer-btn">Pilihan C</button>
+                    <button class="answer-btn">Pilihan D</button>
+                </div>
+            </div> <!-- Akhir div question-content -->
+
+            <!-- Tombol Navigasi -->
+            <div class="mt-auto fade-in-out fade-in" style="animation-delay: 0.5s;"> <!-- [PERUBAHAN] Tambah kelas fade-in-out -->
+                 <button id="next-button" class="next-btn w-full" disabled>Next Question</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Data Kuis (Contoh) ---
+        const quizData = [
+            {
+                question: "Pada gambar tersebut, teknik komposisi apa yang digunakan?",
+                image: "../assets/golden.png", 
+                options: ["Rule of Third", "Leading Line", "Golden Ratio", "Framing"],
+                correctAnswer: "Golden Ratio" 
+            },
+            {
+                question: "Seorang fotografer ingin memotret sunset di pantai. Hasil foto terlalu terang dan warna langit pudar. Apa pengaturan yang paling tepat?",
+                image: "../assets/ppantai.png", 
+                options: ["Naikkan ISO", "Aperture Diperbesar", "Turunkan ISO dan Percepat Shutter", "Aktifkan Flash"],
+                correctAnswer: "Turunkan ISO dan Percepat Shutter"
+            },
+            {
+                question: "Teknik ini membagi frame menjadi 9 bagian sama besar. Apa namanya?",
+                 image: "../assets/rot.png", 
+                options: ["Symmetry", "Rule of Thirds", "Leading Line", "Depth of Field"],
+                correctAnswer: "Rule of Thirds"
+            },
+            {
+                question: "Garis imajiner yang mengarahkan mata ke objek disebut...",
+                 image: "../assets/ll.png", 
+                options: ["Horizon Line", "Vanishing Point", "Leading Line", "Diagonal Line"],
+                correctAnswer: "Leading Line"
+            },
+            {
+                question: "Komposisi yang menempatkan subjek tepat di tengah disebut?",
+                 image: "../assets/ss.png", 
+                options: ["Asymmetrical Balance", "Rule of Odds", "Central Composition / Symmetry", "Negative Space"],
+                correctAnswer: "Central Composition / Symmetry"
+            }
+        ];
+
+        // --- Variabel Status Kuis ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null; 
+
+        // --- Elemen DOM ---
+        const questionCounterEl = document.getElementById('question-counter');
+        const quizImageEl = document.getElementById('quiz-image');
+        const questionTextEl = document.getElementById('question-text');
+        const answerOptionsEl = document.getElementById('answer-options');
+        const nextButton = document.getElementById('next-button');
+        
+        // [PERUBAHAN] Dapatkan elemen pembungkus untuk transisi
+        const questionContentEl = document.getElementById('question-content'); 
+        const headerEl = document.querySelector('header');
+        const nextButtonContainerEl = nextButton.parentElement; // Dapatkan div pembungkus tombol next
+
+        // --- Fungsi untuk Memuat Pertanyaan dengan Transisi ---
+        function loadQuestion() {
+            selectedAnswer = null; // Reset pilihan
+            
+            // [PERUBAHAN] Mulai transisi fade-out
+            questionContentEl.classList.add('fade-out');
+            questionContentEl.classList.remove('fade-in'); // Pastikan fade-in dihapus
+
+            // Tunggu animasi fade-out selesai (sesuaikan durasi dengan CSS transition)
+            setTimeout(() => {
+                const currentQuestion = quizData[currentQuestionIndex];
+
+                // Update konten seperti biasa
+                questionCounterEl.textContent = `${currentQuestionIndex + 1}/${quizData.length}`;
+                quizImageEl.src = currentQuestion.image;
+                quizImageEl.alt = `Pertanyaan ${currentQuestionIndex + 1}`;
+                questionTextEl.textContent = currentQuestion.question;
+
+                answerOptionsEl.innerHTML = ''; 
+                currentQuestion.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('answer-btn', 'w-full');
+                    button.addEventListener('click', handleAnswerSelect);
+                    answerOptionsEl.appendChild(button);
+                });
+
+                nextButton.disabled = true; 
+                 if (currentQuestionIndex === quizData.length - 1) {
+                     nextButton.textContent = 'Finish Quiz';
+                 } else {
+                     nextButton.textContent = 'Next Question';
+                 }
+
+                // [PERUBAHAN] Mulai transisi fade-in setelah konten diupdate
+                questionContentEl.classList.remove('fade-out');
+                questionContentEl.classList.add('fade-in');
+
+            }, 300); // 300ms = durasi transisi di CSS
+        }
+
+
+        // --- Fungsi untuk Menangani Pilihan Jawaban ---
+        function handleAnswerSelect(event) {
+            answerOptionsEl.querySelectorAll('.answer-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            const selectedButton = event.target;
+            selectedButton.classList.add('selected');
+            selectedAnswer = selectedButton.textContent; 
+            nextButton.disabled = false; 
+        }
+
+        // --- Fungsi untuk Menangani Tombol Next/Finish ---
+        function handleNextButtonClick() {
+            if (selectedAnswer === quizData[currentQuestionIndex].correctAnswer) {
+                score++;
+            }
+            console.log(`Pertanyaan ${currentQuestionIndex + 1}: Dipilih "${selectedAnswer}", Benar: ${quizData[currentQuestionIndex].correctAnswer}, Skor: ${score}`);
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                // [PERUBAHAN] Panggil loadQuestion untuk transisi
+                loadQuestion(); 
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // --- Fungsi untuk Menyelesaikan Kuis ---
+        function finishQuiz() {
+            console.log(`Kuis Selesai! Skor Akhir: ${score} dari ${quizData.length}`);
+
+            // [PERUBAHAN] Simpan skor dan total pertanyaan ke localStorage
+            localStorage.setItem('quizScore', score);
+            localStorage.setItem('quizTotalQuestions', quizData.length);
+
+            // [PERUBAHAN] Arahkan pengguna ke halaman skor
+            window.location.href = '../Quiz/qscore.html'; 
+        }
+
+        // --- Event Listener ---
+        nextButton.addEventListener('click', handleNextButtonClick);
+
+        // --- Mulai Kuis ---
+        // [PERUBAHAN] Hapus pemanggilan loadQuestion() awal di sini
+        // Biarkan elemen awal muncul dengan animasi CSS saja
+        
+        // Atur konten awal secara manual untuk pertanyaan pertama (jika diperlukan)
+        // atau biarkan placeholder dan loadQuestion akan dipanggil saat tombol next pertama kali ditekan
+        // Untuk konsistensi, kita panggil loadQuestion() tapi tanpa animasi fade-out awal
+         (function loadFirstQuestion() {
+             const currentQuestion = quizData[currentQuestionIndex];
+             questionCounterEl.textContent = `${currentQuestionIndex + 1}/${quizData.length}`;
+             quizImageEl.src = currentQuestion.image;
+             quizImageEl.alt = `Pertanyaan ${currentQuestionIndex + 1}`;
+             questionTextEl.textContent = currentQuestion.question;
+             answerOptionsEl.innerHTML = ''; 
+             currentQuestion.options.forEach(option => {
+                 const button = document.createElement('button');
+                 button.textContent = option;
+                 button.classList.add('answer-btn', 'w-full');
+                 button.addEventListener('click', handleAnswerSelect);
+                 answerOptionsEl.appendChild(button);
+             });
+             nextButton.disabled = true; 
+             nextButton.textContent = 'Next Question';
+         })();
+
+
+    </script>
+
+</body>
+</html>
+
+

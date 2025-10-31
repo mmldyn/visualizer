@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+    
+    <!-- Memuat script footer di <head> -->
+    <script src="footer/loader.js"></script> 
+
+    <style>
+        /* Menggunakan font Inter sebagai default */
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; /* Warna background sedikit keunguan seperti di gambar */
+        }
+
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('font/CoconRegularFont.woff') format('woff');
+        }
+
+        /* Style untuk progress bar */
+        .progress-bar {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 9999px;
+            overflow: hidden;
+            width: 100%;
+            height: 6px;
+        }
+        .progress-bar-inner {
+            background-color: white;
+            height: 100%;
+            border-radius: 9999px;
+            /* Tambahkan transisi untuk animasi progress bar */
+            transition: width 1.5s ease-out;
+        }
+        /* Warna gradien untuk kartu proyek */
+        .project-card-gradient {
+            background: linear-gradient(145deg, #8A63D2, #6F4AB0);
+        }
+        /* Custom color */
+        .main-purple {
+            color: #6F4AB0;
+        }
+        /* Kontainer iframe responsif untuk video YouTube */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Rasio Aspek 16:9 (9 dibagi 16 = 0.5625) */
+            height: 0;
+            overflow: hidden;
+            border-radius: 1.5rem; /* rounded-3xl */
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* CSS untuk Tumbleweed (Animasi Gurun Kering) */
+        .tumbleweed {
+            width: 100px;
+            height: 100px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23B0A8D9' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M50 10 C 70 20, 80 40, 70 50' /%3E%3Cpath d='M50 10 C 30 20, 20 40, 30 50' /%3E%3Cpath d='M50 90 C 70 80, 80 60, 70 50' /%3E%3Cpath d='M50 90 C 30 80, 20 60, 30 50' /%3E%3Cpath d='M10 50 C 20 70, 40 80, 50 70' /%3E%3Cpath d='M10 50 C 20 30, 40 20, 50 30' /%3E%3Cpath d='M90 50 C 80 70, 60 80, 50 70' /%3E%3Cpath d='M90 50 C 80 30, 60 20, 50 30' /%3E%3Cpath d='M35 35 C 45 40, 55 40, 65 35' /%3E%3Cpath d='M35 65 C 45 60, 55 60, 65 65' /%3E%3Cpath d='M65 35 C 60 45, 60 55, 65 65' /%3E%3Cpath d='M35 35 C 40 45, 40 55, 35 65' /%3E%3Ccircle cx='50' cy='50' r='12'/%3E%3C/svg%3E");
+            background-size: contain;
+            animation: roll 3s linear infinite, fade 0.5s ease-out;
+        }
+        @keyframes roll {
+            0% { transform: translateX(-150px) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateX(150px) rotate(360deg); opacity: 0; }
+        }
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* CSS untuk transisi pencarian */
+        .project-card {
+            opacity: 1;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            transform: scale(1);
+        }
+        .project-card.hidden {
+            opacity: 0;
+            transform: scale(0.9);
+            height: 0; /* Sembunyikan sepenuhnya */
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        #no-results {
+            transition: opacity 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto max-w-lg pb-28">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6">
+            <button>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+            <h1 class="font-bold text-lg">HOME</h1>
+            <button>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Konten Utama -->
+        <main class="px-6 space-y-6">
+            <!-- Salam -->
+            <div>
+                <h2 class="text-3xl font-bold">Hi, mates!</h2>
+                <p class="text-gray-500">Good Morning</p>
+            </div>
+
+            <!-- Search Bar (Dipulihkan) -->
+            <div class="relative">
+                <input type="text" id="search-bar" placeholder="Search your projects" class="w-full bg-gray-200/60 rounded-full py-3 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-[#6F4AB0]">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Kartu Mark The Date (Diperbaiki) -->
+            <a href="calender.html" class="block hover:shadow-lg hover:scale-[1.03] transition-all duration-300 rounded-2xl">
+                <div class="bg-[#6F4AB0] p-5 flex justify-between items-center text-white rounded-2xl">
+                    <div>
+                        <h3 class="font-bold">Mark The Date!</h3>
+                        <p class="text-sm opacity-80">Lets schedule your projects</p>
+                    </div>
+                    <div class="bg-white/30 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v4m-2-2h4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            <!-- [AKHIR PERBAIKAN] -->
+
+            <!-- Bagian Kursus (Dipulihkan) -->
+            <section>
+                <h3 class="text-2xl font-bold main-purple">Courses</h3>
+                <div class="mt-4 relative">
+                    <div id="video-carousel" class="flex overflow-hidden rounded-3xl relative">
+                        <!-- Video 1: Apa itu ISO -->
+                        <div class="video-carousel-item w-full flex-shrink-0">
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/NJPs-NN770o?autoplay=1&mute=1&loop=1&playlist=NJPs-NN770o&controls=0&modestbranding=1&rel=0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Apa itu ISO"></iframe>
+                            </div>
+                        </div>
+                        <!-- Video 2: Apa itu Segitiga Exposure -->
+                        <div class="video-carousel-item w-full flex-shrink-0 hidden">
+                             <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/_ba3zCkR_rU?autoplay=1&mute=1&loop=1&playlist=_ba3zCkR_rU&controls=0&modestbranding=1&rel=0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Apa itu Segitiga Exposure"></iframe>
+                            </div>
+                        </div>
+                        <!-- Video 3: Komposisi Video -->
+                        <div class="video-carousel-item w-full flex-shrink-0 hidden">
+                             <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/4COVQ-Teuq8?autoplay=1&mute=1&loop=1&playlist=4COVQ-Teuq8&controls=0&modestbranding=1&rel=0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Komposisi Video"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Titik Navigasi Carousel -->
+                    <div id="carousel-dots" class="flex justify-center space-x-2 mt-4">
+                        <div class="carousel-dot w-2 h-2 bg-[#6F4AB0] rounded-full cursor-pointer" data-slide="0"></div>
+                        <div class="carousel-dot w-2 h-2 bg-gray-300 rounded-full cursor-pointer" data-slide="1"></div>
+                        <div class="carousel-dot w-2 h-2 bg-gray-300 rounded-full cursor-pointer" data-slide="2"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Bagian Proyek Berlangsung (Dipulihkan) -->
+            <section>
+                <h3 class="text-2xl font-bold main-purple mb-4">Ongoing Projects</h3>
+                <div id="project-grid" class="grid grid-cols-2 gap-4"> 
+                    
+                    <!-- Kartu Proyek 1 -->
+                    <a href="project_detail.html?project=dasar" class="project-card block" data-title="fotografi dasar">
+                        <div class="project-card-gradient text-white p-4 rounded-3xl space-y-3 h-full">
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs opacity-80">20 September 2025</p>
+                                <button class="opacity-80">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
+                                </button>
+                            </div>
+                            <h4 class="text-xl font-bold leading-tight">Fotografi<br>Dasar</h4>
+                            <div>
+                                <p class="text-xs opacity-80 mb-1">Progress</p>
+                                <div class="progress-bar">
+                                    <div id="progress-bar-dasar" class="progress-bar-inner" style="width: 0%;" data-progress="0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Kartu Proyek 2 -->
+                    <a href="project_detail.html?project=aplikatif" class="project-card block" data-title="fotografi aplikator">
+                        <div class="project-card-gradient text-white p-4 rounded-3xl space-y-3 h-full">
+                             <div class="flex justify-between items-start">
+                                <p class="text-xs opacity-80">20 September 2025</p>
+                                <button class="opacity-80">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
+                                </button>
+                            </div>
+                            <h4 class="text-xl font-bold leading-tight">Fotografi<br>Aplikator</h4>
+                            <div>
+                                <p class="text-xs opacity-80 mb-1">Progress</p>
+                                <div class="progress-bar">
+                                    <!-- Progress bar ini tetap 50% karena kita tidak punya logikanya -->
+                                    <div class="progress-bar-inner" style="width: 0%;" data-progress="0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Pesan "Tidak Ditemukan" untuk pencarian -->
+                <div id="no-results" class="hidden text-center py-10">
+                    <div class="tumbleweed mx-auto"></div>
+                    <p class="text-lg font-semibold text-gray-500 mt-4">Oops, nothing found!</p>
+                    <p class="text-sm text-gray-400">Try searching for other keywords.</p>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- Placeholder untuk footer (akan diisi oleh footer-loader.js) -->
+    <div id="footer-placeholder"></div>
+
+
+    <!-- Seluruh JavaScript dipindahkan ke script module -->
+    <script type="module">
+        // --- IMPORTS ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG (MANUAL) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzI4qdeeiVT7FXnN0aEhOEOuchLmy_I6A", 
+            authDomain: "visualizer-811a2.firebaseapp.com",   
+            projectId: "visualizer-811a2",
+            storageBucket: "visualizer-811a2.appspot.com",   
+            messagingSenderId: "37323047025",
+            appId: "1:37323047025:web:4717b1b767ce4470769bd0",
+            measurementId: "G-2BYGT2DZW9"
+        };
+        
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("Firebase Dashboard Initialized");
+        } catch (error) {
+            console.error("Firebase Init Error (Dashboard):", error);
+        }
+        
+
+        // --- MAIN LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Load Footer
+            if (typeof loadFooter === 'function') {
+                loadFooter('nav-home');
+            } else {
+                console.error("footer-loader.js tidak ter-load dengan benar.");
+            }
+
+            // 2. Progress Bar Loader Function
+            function loadProgressBars() {
+                const progressBars = document.querySelectorAll('.progress-bar-inner');
+                progressBars.forEach(bar => {
+                    const targetProgress = bar.dataset.progress || 0; 
+                    setTimeout(() => { 
+                        bar.style.width = targetProgress + '%';
+                    }, 100);
+                });
+            }
+            
+            // 3. Search Function
+            const searchBar = document.getElementById('search-bar');
+            const projectGrid = document.getElementById('project-grid');
+            const projectCards = document.querySelectorAll('.project-card');
+            const noResultsMessage = document.getElementById('no-results');
+            
+            function searchProjects() {
+                const query = searchBar.value.toLowerCase().trim();
+                let resultsFound = 0;
+
+                projectCards.forEach(card => {
+                    const title = card.dataset.title.toLowerCase();
+                    if (title.includes(query)) {
+                        card.classList.remove('hidden');
+                        resultsFound++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                if (resultsFound === 0 && query.length > 0) {
+                    noResultsMessage.classList.remove('hidden');
+                } else {
+                    noResultsMessage.classList.add('hidden');
+                }
+            }
+            if(searchBar) {
+                searchBar.addEventListener('input', searchProjects);
+            }
+
+            // 4. Dynamic Progress Bar Logic
+            const progressBarDasar = document.getElementById('progress-bar-dasar');
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const userId = user.uid;
+                    const appId = 'default-app-id'; // Asumsi
+                    const feedbackPath = `artifacts/${appId}/users/${userId}/ai_feedback`;
+                    const feedbackCol = collection(db, feedbackPath);
+                    const q = query(feedbackCol); 
+
+                    console.log("Mendengarkan perubahan progres dari:", feedbackPath);
+
+                    onSnapshot(q, (querySnapshot) => {
+                        console.log("Data progres diterima, menghitung...");
+                        
+                        let submissions = {
+                            "Rule of Thirds": 0,
+                            "Golden Section": 0,
+                            "Symmetry": 0
+                        };
+                        
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            if (data.compositionChoice && submissions.hasOwnProperty(data.compositionChoice)) {
+                                submissions[data.compositionChoice]++;
+                            }
+                        });
+
+                        // Goals dari project_detail.html: RoT=5, Golden=3, Symmetry=2
+                        const goals = {
+                            "Rule of Thirds": 5,
+                            "Golden Section": 3,
+                            "Symmetry": 2
+                        };
+                        
+                        let progressRot = Math.min(100, (submissions["Rule of Thirds"] / goals["Rule of Thirds"]) * 100);
+                        let progressGolden = Math.min(100, (submissions["Golden Section"] / goals["Golden Section"]) * 100);
+                        let progressSymmetry = Math.min(100, (submissions["Symmetry"] / goals["Symmetry"]) * 100);
+                        
+                        let totalProgress = (progressRot + progressGolden + progressSymmetry) / 3;
+                        
+                        if (progressBarDasar) {
+                            const roundedProgress = Math.round(totalProgress);
+                            progressBarDasar.dataset.progress = roundedProgress;
+                            progressBarDasar.style.width = roundedProgress + '%'; 
+                        }
+                        
+                         // Panggil loadProgressBars untuk menganimasikan bar yang *tidak* dinamis (spt Aplikator)
+                         loadProgressBars();
+
+                    }, (error) => {
+                         console.error("Error mendengarkan progres:", error);
+                         loadProgressBars();
+                    });
+
+                } else {
+                    console.log("User is logged out. Menampilkan progres statis.");
+                    loadProgressBars(); 
+                }
+            });
+
+             // Logika untuk Carousel Video (dari file asli Anda)
+            const videoCarousel = document.getElementById('video-carousel');
+            const carouselItems = document.querySelectorAll('.video-carousel-item');
+            const carouselDots = document.querySelectorAll('.carousel-dot');
+            let currentSlide = 0;
+            
+            if (carouselItems.length > 0) { 
+                carouselItems.forEach(item => {
+                    const iframe = item.querySelector('iframe');
+                    if (iframe) iframe.dataset.originalSrc = iframe.src;
+                });
+
+                function showSlide(index) {
+                    carouselItems.forEach((item, i) => {
+                        const iframe = item.querySelector('iframe');
+                        if (!iframe) return; 
+
+                        if (i === index) {
+                            item.classList.remove('hidden');
+                            if (iframe.src !== iframe.dataset.originalSrc) {
+                               iframe.src = iframe.dataset.originalSrc;
+                            }
+                        } else {
+                            item.classList.add('hidden');
+                            if (iframe.src !== "") {
+                               iframe.src = ""; 
+                            }
+                        }
+                    });
+
+                    carouselDots.forEach((dot, i) => {
+                        if (i === index) {
+                            dot.classList.remove('bg-gray-300');
+                            dot.classList.add('bg-[#6F4AB0]');
+                        } else {
+                            dot.classList.remove('bg-[#6F4AB0]');
+                            dot.classList.add('bg-gray-300');
+                        }
+                    });
+                    currentSlide = index;
+                }
+
+                carouselDots.forEach(dot => {
+                    dot.addEventListener('click', (event) => {
+                        const slideIndex = parseInt(event.target.dataset.slide);
+                        showSlide(slideIndex);
+                    });
+                });
+
+                showSlide(currentSlide);
+            }
+        });
+    </script>
+</body>
+</html>
+

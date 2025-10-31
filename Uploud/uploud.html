@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/v.png">
+    
+    <style>
+        /* [PERUBAHAN] Menggunakan font Cocon Regular sebagai default */
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #6F4AB0;
+        }
+
+        /* Definisi font Cocon */
+        @font-face {
+            font-family: 'Cocon Regular';
+            font-style: normal;
+            font-weight: normal;
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+
+        /* Custom color */
+        .main-purple {
+            color: #6F4AB0;
+        }
+        .bg-light-purple {
+            background-color: #EAE6F9; /* Warna ungu muda untuk area upload */
+        }
+        .text-light-purple {
+            color: #EAE6F9;
+        }
+        .text-dark-purple {
+            color: #3b1f7a;
+        }
+
+        /* [BARU] Animasi fade-in untuk objek */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <div class="container mx-auto max-w-lg min-h-screen flex flex-col">
+        <!-- Header Khusus Halaman Upload -->
+        <header class="flex justify-between items-center p-6 text-white fade-in" style="animation-delay: 0.1s;">
+            <!-- [PERBAIKAN] Tombol Kembali diubah ke /project.html -->
+            <a href="/project.html" class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="font-bold text-lg">Upload File</h1>
+            <!-- Ikon Profil -->
+            <button class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Konten Utama -->
+        <main class="flex-grow flex flex-col">
+            <!-- Kartu Info Proyek -->
+            <div class="bg-white text-gray-800 rounded-3xl p-6 mx-6 mt-2 shadow-lg fade-in" style="animation-delay: 0.2s;">
+                <p class="text-xs text-main-purple font-medium">Assigned 20 September 2025</p>
+                <h2 class="text-3xl font-bold text-dark-purple mt-1">Fotografi Dasar</h2>
+                <p class="text-gray-500 mt-2">5 each of Rule of Thirds, Golden Section, Symmetry</p>
+            </div>
+
+            <!-- Area Uploader -->
+            <div class="flex-grow flex flex-col mx-6 mt-8 mb-6 fade-in" style="animation-delay: 0.3s;">
+                <!-- Tab Navigasi -->
+                <div class="flex">
+                    <!-- Tab Aktif: Upload File -->
+                    <button id="tab-upload" class="bg-light-purple text-dark-purple font-semibold py-3 px-8 rounded-t-2xl z-10">
+                        Upload File
+                    </button>
+                    <!-- Tab Inaktif: Camera -->
+                    <button id="tab-camera" class="bg-[#D6D0EC] text-gray-600 font-semibold py-3 px-8 rounded-t-2xl">
+                        Camera
+                    </button>
+                </div>
+                
+                <!-- [PERUBAHAN] Konten Tab Uploader sekarang berisi dua panel -->
+                <div class="flex-grow bg-light-purple rounded-b-3xl rounded-tr-3xl p-6 flex flex-col justify-center items-center -mt-px z-0 fade-in" style="animation-delay: 0.4s; min-height: 300px;">
+                    
+                    <!-- Panel 1: Upload File (Tombol Plus) -->
+                    <div id="upload-pane" class="w-full h-full flex flex-col justify-center items-center">
+                        <button id="upload-zone" class="w-40 h-40 rounded-full border-4 border-dashed border-gray-400/70 flex justify-center items-center hover:border-main-purple transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </button>
+                        <p class="text-gray-600 mt-4">Klik untuk memilih file</p>
+                    </div>
+
+                    <!-- Panel 2: Camera (Tombol Open Camera App) -->
+                    <div id="camera-pane" class="w-full h-full flex flex-col justify-center items-center hidden">
+                        <p class="text-gray-600 text-center px-4 mb-6">Looks like camera app is needed to access this feature</p>
+                        <button id="open-camera-btn" class="bg-[#6F4AB0] text-white px-6 py-3 rounded-full font-semibold shadow-md hover:bg-[#5a3a93] transition-colors">
+                            Open Camera App
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Input file tersembunyi untuk upload & kamera -->
+            <input type="file" id="file-upload-input" class="hidden" multiple>
+            <input type="file" id="camera-input" class="hidden" accept="image/*" capture="user">
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabUpload = document.getElementById('tab-upload');
+            const tabCamera = document.getElementById('tab-camera');
+            const uploadPane = document.getElementById('upload-pane');
+            const cameraPane = document.getElementById('camera-pane');
+            const uploadZone = document.getElementById('upload-zone');
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const fileInput = document.getElementById('file-upload-input');
+            const cameraInput = document.getElementById('camera-input');
+
+            const activeClasses = ['bg-light-purple', 'text-dark-purple', 'z-10'];
+            const inactiveClasses = ['bg-[#D6D0EC]', 'text-gray-600'];
+
+            // === LOGIKA TAB SWITCH ===
+            tabUpload.addEventListener('click', () => {
+                tabUpload.classList.add(...activeClasses);
+                tabUpload.classList.remove(...inactiveClasses);
+                tabCamera.classList.add(...inactiveClasses);
+                tabCamera.classList.remove(...activeClasses);
+                uploadPane.classList.remove('hidden');
+                cameraPane.classList.add('hidden');
+            });
+            tabCamera.addEventListener('click', () => {
+                tabCamera.classList.add(...activeClasses);
+                tabCamera.classList.remove(...inactiveClasses);
+                tabUpload.classList.add(...inactiveClasses);
+                tabUpload.classList.remove(...activeClasses);
+                cameraPane.classList.remove('hidden');
+                uploadPane.classList.add('hidden');
+            });
+
+            // === LOGIKA TOMBOL UPLOAD ===
+            uploadZone.addEventListener('click', () => { fileInput.click(); });
+            openCameraBtn.addEventListener('click', () => { cameraInput.click(); });
+
+            // === FUNGSI HANDLE UPLOAD DENGAN RESIZE ===
+            function handleFileUpload(file) {
+                if (!file || !file.type.startsWith('image/')) {
+                     console.error("File bukan gambar.");
+                     alert("Silakan pilih file gambar.");
+                     return;
+                 }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const originalImageData = event.target.result; // Simpan data asli untuk logging
+                     // [LOGGING] Tampilkan ukuran asli
+                     const originalBase64Length = originalImageData.length - originalImageData.split(',')[0].length - 1;
+                     const originalSizeInBytes = originalBase64Length * 0.75;
+                     console.log(`Ukuran gambar ASLI (estimasi): ${Math.round(originalSizeInBytes / 1024)} KB`);
+
+
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // [PERBAIKAN] Ukuran maksimal dikecilkan
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800; 
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Hitung rasio resize
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        // Pastikan dimensi tidak 0
+                        width = Math.max(1, Math.round(width));
+                        height = Math.max(1, Math.round(height));
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        // Gambar ulang gambar ke canvas
+                        try {
+                            ctx.drawImage(img, 0, 0, width, height);
+                        } catch (e) {
+                             console.error("Error saat drawImage:", e);
+                             alert("Gagal memproses gambar (drawImage error). Coba file lain.");
+                             return;
+                        }
+
+                        // [PERBAIKAN] Kualitas JPEG diturunkan
+                        const resizedImageData = canvas.toDataURL('image/jpeg', 0.7); // Kualitas 70%
+
+                        // Cek ukuran Base64 hasil resize
+                        const resizedBase64Length = resizedImageData.length - 'data:image/jpeg;base64,'.length;
+                        const resizedSizeInBytes = resizedBase64Length * 0.75; // Estimasi ukuran byte
+                        console.log(`Ukuran gambar SETELAH resize (estimasi): ${Math.round(resizedSizeInBytes / 1024)} KB`);
+
+                        if (resizedSizeInBytes > 1048576) {
+                            console.error("Gambar masih terlalu besar setelah resize.");
+                            // Beri pesan yang lebih jelas
+                            alert(`Ukuran gambar masih terlalu besar (${Math.round(resizedSizeInBytes / 1024)} KB) bahkan setelah dikecilkan. Batas maksimal sekitar 1000 KB. Coba gambar lain atau perkecil resolusi/kualitasnya lebih lanjut.`);
+                            return;
+                        }
+
+                        // Simpan gambar HASIL RESIZE ke session storage
+                        sessionStorage.setItem('uploadedImage', resizedImageData);
+                        console.log("Gambar berhasil di-resize dan disimpan ke session storage.");
+
+                        // Arahkan pengguna ke halaman submit
+                        window.location.href = 'submit_file.html';
+                    }
+                    img.onerror = function(e) {
+                        console.error("Gagal memuat gambar untuk resize. Error:", e);
+                        alert("Gagal memproses gambar. Pastikan file gambar valid dan tidak rusak. Coba file lain.");
+                    }
+                    img.src = originalImageData; // Muat gambar asli ke elemen Image
+                };
+                reader.onerror = function() {
+                     console.error("Gagal membaca file.");
+                     alert("Gagal membaca file yang dipilih.");
+                }
+                reader.readAsDataURL(file); // Baca file sebagai Data URL (Base64)
+            }
+            // === AKHIR FUNGSI HANDLE UPLOAD ===
+
+
+            // Event listener untuk input file
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    console.log('File dipilih:', fileInput.files[0].name);
+                    handleFileUpload(fileInput.files[0]); 
+                }
+            });
+
+            // Event listener untuk input kamera
+            cameraInput.addEventListener('change', () => {
+                if (cameraInput.files.length > 0) {
+                    console.log('Gambar diambil:', cameraInput.files[0].name);
+                    handleFileUpload(cameraInput.files[0]); 
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
+

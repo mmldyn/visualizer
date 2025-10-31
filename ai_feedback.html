@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Feedback</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/v.png">
+    <script src="footer/loader.js"></script>
+
+    <!-- [PENTING] Memuat Firebase SDKs -->
+    <script type="module">
+        loadFooter('nav-profile');
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Setup Firebase (MANUAL) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzI4qdeeiVT7FXnN0aEhOEOuchLmy_I6A", 
+            authDomain: "visualizer-811a2.firebaseapp.com",   
+            projectId: "visualizer-811a2",
+            storageBucket: "visualizer-811a2.appspot.com",   
+            messagingSenderId: "37323047025",
+            appId: "1:37323047025:web:4717b1b767ce4470769bd0",
+            measurementId: "G-2BYGT2DZW9"
+        };
+        // --- Akhir Setup Manual ---
+
+        let db;
+        let auth;
+
+        function displayPageError(message) {
+             console.error("Page Error:", message);
+             const errorContainer = document.getElementById('error-container');
+             if (errorContainer) {
+                 errorContainer.textContent = message;
+                 errorContainer.classList.remove('hidden');
+             }
+             const loadingIndicator = document.getElementById('loading-indicator');
+             if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const carouselContainer = document.getElementById('carousel-container');
+            const analyticResultsContainer = document.getElementById('analytic-results');
+            const dotsContainer = document.getElementById('carousel-dots');
+            const fileTitleContainer = document.getElementById('file-titles');
+            const loadingIndicator = document.getElementById('loading-indicator'); 
+            const errorContainer = document.getElementById('error-container'); // Dapatkan error container
+
+            let feedbackData = []; 
+            let currentSlideIndex = 0;
+
+            if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
+            try {
+                console.log("Initializing Firebase app on chatbot page...");
+                const app = initializeApp(firebaseConfig);
+                console.log("Getting Firestore and Auth...");
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log("Firestore and Auth obtained.");
+
+                let currentUser = null;
+
+                try {
+                    const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    
+                    if (authToken) {
+                        console.log("Attempting sign in with custom token...");
+                        await signInWithCustomToken(auth, authToken);
+                        console.log("Sign in with custom token successful.");
+                    } else if (!auth.currentUser) { 
+                        console.log("No current user and no token, attempting anonymous sign in...");
+                        await signInAnonymously(auth); 
+                        console.log("Anonymous sign in successful.");
+                    } else {
+                         console.log("User already signed in:", auth.currentUser.uid); 
+                    }
+                    currentUser = auth.currentUser;
+                    if (!currentUser) throw new Error("Authentication could not establish a user session.");
+                } catch (error) {
+                     displayPageError(`Authentication Error: ${error.message}. Please check Firebase config and ensure Anonymous Sign-in is enabled.`);
+                     return; 
+                }
+
+                const userId = currentUser.uid;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                console.log(`User ID: ${userId}, App ID: ${appId}`);
+
+                const feedbackPath = `artifacts/${appId}/users/${userId}/ai_feedback`;
+                console.log("Fetching data from Firestore path:", feedbackPath);
+
+                const feedbackCol = collection(db, feedbackPath);
+                const q = query(feedbackCol, orderBy("timestamp", "desc")); 
+
+                const querySnapshot = await getDocs(q);
+                console.log(`Found ${querySnapshot.size} documents.`);
+
+                 if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
+                if (querySnapshot.empty) {
+                    if (carouselContainer) carouselContainer.innerHTML = '<p class="text-center text-gray-500 py-10">No feedback data found.</p>';
+                    if (analyticResultsContainer) analyticResultsContainer.innerHTML = ''; 
+                    if (dotsContainer) dotsContainer.innerHTML = '';
+                    if (fileTitleContainer) fileTitleContainer.innerHTML = '';
+                    console.log("No documents found in Firestore at the specified path.");
+                    return; 
+                }
+
+                querySnapshot.forEach((doc) => {
+                    feedbackData.push({ id: doc.id, ...doc.data() });
+                });
+                console.log("Feedback data loaded:", feedbackData);
+
+                // --- Fungsi Render UI ---
+                function renderSlide(index) {
+                    if (!feedbackData[index]) return; 
+
+                    const data = feedbackData[index];
+                    
+                    // Render gambar
+                    if (carouselContainer && data.originalImage) {
+                        carouselContainer.innerHTML = `
+                            <div class="flex-shrink-0 w-full snap-center flex justify-center">
+                                <img id="feedback-image-${index}" src="${data.originalImage}" alt="Feedback Image ${index + 1}" class="w-11/12 h-48 object-cover rounded-2xl shadow-lg">
+                            </div>
+                        `;
+                    } else if (carouselContainer) {
+                         carouselContainer.innerHTML = `<p class="text-center text-gray-500">Image not found</p>`;
+                    }
+
+                    renderFileTitles(index);
+                    renderCarouselDots(index);
+                    renderAnalyticResult('lighting', index); // Default tampilkan lighting
+                }
+
+                function renderFileTitles(activeIndex) {
+                     if (!fileTitleContainer) return;
+                     fileTitleContainer.innerHTML = ''; 
+                     const maxTitlesToShow = 5; 
+                     const totalFiles = feedbackData.length;
+                     let start = Math.max(0, activeIndex - Math.floor(maxTitlesToShow / 2));
+                     let end = Math.min(totalFiles, start + maxTitlesToShow);
+                     
+                     if(end - start < maxTitlesToShow && totalFiles >= maxTitlesToShow) {
+                         start = Math.max(0, end - maxTitlesToShow);
+                     }
+
+                     for (let i = start; i < end; i++) {
+                         const titleSpan = document.createElement('span');
+                         titleSpan.textContent = `File ${i + 1}`;
+                         titleSpan.classList.add('px-4', 'py-1', 'transition-all', 'duration-300', 'cursor-pointer');
+                         if (i === activeIndex) {
+                             titleSpan.classList.add('font-bold', 'text-2xl', 'main-purple');
+                         } else {
+                             titleSpan.classList.add('text-gray-400', 'text-xl');
+                         }
+                         titleSpan.addEventListener('click', () => {
+                              currentSlideIndex = i;
+                              renderSlide(currentSlideIndex);
+                         });
+                         fileTitleContainer.appendChild(titleSpan);
+                     }
+                 }
+
+                function renderCarouselDots(activeIndex) {
+                     if (!dotsContainer) return;
+                     dotsContainer.innerHTML = ''; 
+                     feedbackData.forEach((_, index) => {
+                         const dot = document.createElement('div');
+                         dot.classList.add('w-2', 'h-2', 'rounded-full', 'cursor-pointer', 'transition-colors');
+                         if (index === activeIndex) {
+                             dot.classList.add('bg-main-purple');
+                         } else {
+                             dot.classList.add('bg-gray-300');
+                         }
+                         dot.addEventListener('click', () => {
+                             currentSlideIndex = index;
+                             renderSlide(currentSlideIndex);
+                         });
+                         dotsContainer.appendChild(dot);
+                     });
+                 }
+
+                // [PERBAIKAN] Fungsi ini sekarang akan mengambil feedback dari data Python
+                function renderAnalyticResult(category, slideIndex) {
+                     // Pastikan elemen dan data ada
+                     const resultTitle = document.getElementById('result-title');
+                     const resultText = document.getElementById('result-text');
+                     if (!analyticResultsContainer || !resultTitle || !resultText || !feedbackData[slideIndex] || !feedbackData[slideIndex].analysis) {
+                          console.error("Missing elements or data for rendering analysis.");
+                          if (analyticResultsContainer) analyticResultsContainer.innerHTML = '<p class="text-center text-gray-500">Error rendering analysis data.</p>';
+                          return;
+                     };
+
+                     const analysis = feedbackData[slideIndex].analysis;
+                     const resultData = analysis[category]; // Dapatkan data untuk kategori (lighting, color, composition)
+
+                     // Update tampilan tab (Logika ini sudah benar)
+                     const tabs = document.querySelectorAll('#analytic-tabs button');
+                     tabs.forEach(tab => {
+                         if (tab.getAttribute('data-category') === category) {
+                             tab.classList.remove('bg-[#D6D0EC]', 'text-gray-600');
+                             tab.classList.add('bg-light-purple', 'text-dark-purple', 'z-10');
+                         } else {
+                             tab.classList.remove('bg-light-purple', 'text-dark-purple', 'z-10');
+                             tab.classList.add('bg-[#D6D0EC]', 'text-gray-600');
+                         }
+                     });
+
+                     // Update konten hasil analisis
+                     if (resultData && resultData.feedback) {
+                         // [PERBAIKAN] Ambil teks feedback langsung dari data
+                         resultText.textContent = resultData.feedback;
+
+                         // [PERBAIKAN] Buat judul lebih dinamis berdasarkan feedback dari Python
+                         let title = category.charAt(0).toUpperCase() + category.slice(1) + " Analysis"; // Default title
+                         // Contoh logika judul (Anda bisa kembangkan)
+                         if (category === 'lighting') {
+                              if (resultData.feedback.includes('gelap')) title = 'Underexposed!';
+                              else if (resultData.feedback.includes('terang')) title = 'Overexposed!';
+                              else title = 'Brightness Match!';
+                         } else if (category === 'color') {
+                              // Cek kata kunci dari template feedback Python Anda
+                              if (resultData.feedback.includes('sesuai')) title = 'Color Match!';
+                              else title = 'Color Mismatch!';
+                         } else if (category === 'composition') {
+                              if (resultData.feedback.includes('Luar biasa') || resultData.feedback.includes('baik')) title = 'Good Composition!';
+                              else title = 'Standard Composition';
+                         }
+                         resultTitle.textContent = title;
+
+                     } else {
+                         // Tampilkan pesan jika data feedback untuk kategori ini tidak ada
+                         resultTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1) + " Analysis";
+                         resultText.textContent = "No specific feedback available for this category.";
+                         console.warn(`No feedback data found for category '${category}' in slide ${slideIndex}`);
+                     }
+                 }
+
+                // Tambahkan event listener ke tab analisis (Logika ini sudah benar)
+                const analyticTabs = document.querySelectorAll('#analytic-tabs button');
+                analyticTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const category = tab.getAttribute('data-category');
+                        renderAnalyticResult(category, currentSlideIndex); 
+                    });
+                });
+
+                // Render slide pertama
+                renderSlide(currentSlideIndex);
+
+            } catch (error) {
+                displayPageError(`Error loading feedback: ${error.message}. Check Firestore connection and path.`);
+                console.error("Full error:", error); 
+            }
+        });
+    </script>
+
+    <style>
+        /* Menggunakan font Cocon Regular sebagai default */
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; 
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+        /* Custom colors */
+        .main-purple { color: #6F4AB0; }
+        .bg-main-purple { background-color: #6F4AB0; }
+        .text-dark-purple { color: #3b1f7a; }
+        .bg-light-purple { background-color: #EAE6F9; } /* Ungu muda */
+
+        /* Styling untuk carousel scroll snap */
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-center { scroll-snap-align: center; }
+
+        /* Sembunyikan scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto max-w-lg min-h-screen flex flex-col pb-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 text-main-purple">
+            <a href="project.html" class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="font-bold text-lg">AI Feedback</h1>
+            <button class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </button>
+        </header>
+
+         <!-- Container untuk menampilkan error halaman -->
+         <div id="error-container" class="px-6 py-4 text-center text-red-600 font-semibold hidden"></div>
+         <!-- Indikator loading -->
+         <div id="loading-indicator" class="text-center py-10 hidden">
+             <p class="text-gray-500">Loading feedback...</p>
+         </div>
+
+
+        <!-- Carousel Judul File -->
+        <div id="file-titles" class="flex justify-center items-baseline space-x-2 my-4 px-6 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <!-- File 1 File 2 File 3 -->
+        </div>
+
+
+        <!-- Carousel Gambar -->
+        <div id="carousel-container" class="w-full overflow-x-auto snap-x snap-mandatory flex no-scrollbar mb-4 px-2">
+            <!-- Gambar feedback -->
+        </div>
+
+        <!-- Titik Navigasi Carousel -->
+        <div id="carousel-dots" class="flex justify-center space-x-2 mb-8">
+            <!-- o o o -->
+        </div>
+
+
+        <!-- Hasil Analisis -->
+        <div class="px-6">
+            <h2 class="text-2xl font-bold main-purple mb-4">Analytic Results</h2>
+
+            <div class="flex-grow flex flex-col rounded-3xl overflow-hidden shadow-lg">
+                <!-- Tab Navigasi Analisis -->
+                <div id="analytic-tabs" class="flex">
+                    <button data-category="lighting" class="flex-1 bg-light-purple text-dark-purple font-semibold py-3 px-4 rounded-tl-2xl z-10 text-sm sm:text-base">
+                        Lighting
+                    </button>
+                    <button data-category="color" class="flex-1 bg-[#D6D0EC] text-gray-600 font-semibold py-3 px-4 text-sm sm:text-base">
+                        Color
+                    </button>
+                    <button data-category="composition" class="flex-1 bg-[#D6D0EC] text-gray-600 font-semibold py-3 px-4 rounded-tr-2xl text-sm sm:text-base">
+                        Composition
+                    </button>
+                </div>
+                
+                <!-- Konten Hasil Analisis -->
+                <div id="analytic-results" class="flex-grow bg-light-purple p-6 -mt-px z-0 rounded-b-3xl min-h-[150px] flex flex-col items-center justify-center"> <!-- [PERBAIKAN] Tambahkan flex untuk tengahkan jika error -->
+                    <!-- Konten awal (akan diganti JS) -->
+                     <h3 id="result-title" class="text-xl font-bold text-dark-purple text-center">Loading...</h3>
+                     <p id="result-text" class="text-gray-600 text-center mt-2">Fetching analysis results...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+</body>
+</html>
+

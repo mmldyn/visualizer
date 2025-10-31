@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Score</title>
+    <!-- Memuat Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="assets/v.png">
+
+    <style>
+        body {
+            font-family: 'Cocon Regular', sans-serif;
+            background-color: #f8f7ff; /* Latar belakang putih keunguan */
+            color: #3b1f7a; /* Warna teks ungu tua default */
+            display: flex; /* Aktifkan flexbox */
+            justify-content: center; /* Tengahkan horizontal */
+            align-items: center; /* Tengahkan vertikal */
+            min-height: 100vh; /* Pastikan body setinggi layar */
+        }
+        @font-face {
+            font-family: 'Cocon Regular';
+            src: local('Cocon Regular'), url('../font/CoconRegularFont.woff') format('woff');
+        }
+        .main-purple { color: #6F4AB0; }
+        .bg-main-purple { background-color: #6F4AB0; }
+        .text-dark-purple { color: #3b1f7a; }
+
+        /* Animasi spinner loading */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #6F4AB0; /* Warna ungu */
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animasi fade-in untuk hasil */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        /* Tombol Back */
+        .back-btn {
+            background-color: #6F4AB0; /* bg-main-purple */
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+            display: inline-block; /* Agar bisa diatur width/margin */
+            margin-top: 1.5rem; /* Jarak dari skor */
+        }
+         .back-btn:hover {
+             background-color: #5a3a93; /* Warna hover lebih gelap */
+             transform: scale(1.03);
+         }
+    </style>
+</head>
+<body class="text-dark-purple">
+
+    <div class="container mx-auto max-w-sm text-center p-6">
+
+        <!-- Bagian Loading (Awalnya terlihat) -->
+        <div id="loading-section" class="flex flex-col items-center">
+            <div class="spinner mb-4"></div>
+            <p class="font-semibold text-lg main-purple">Calculating Score...</p>
+        </div>
+
+        <!-- Bagian Hasil Skor (Awalnya tersembunyi) -->
+        <div id="score-section" class="hidden">
+            <h1 class="text-2xl font-bold main-purple mb-2">Quiz Completed!</h1>
+            <p class="text-lg">Your Score:</p>
+            <p id="final-score" class="text-4xl font-bold mt-2 mb-4">0/0</p>
+            <a href="../dashboard.html" class="back-btn">Back to Dashboard</a>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingSection = document.getElementById('loading-section');
+            const scoreSection = document.getElementById('score-section');
+            const finalScoreEl = document.getElementById('final-score');
+
+            // Ambil skor dari localStorage
+            const score = localStorage.getItem('quizScore');
+            const totalQuestions = localStorage.getItem('quizTotalQuestions');
+
+            // Tampilkan animasi loading selama 3 detik
+            setTimeout(() => {
+                loadingSection.style.display = 'none'; // Sembunyikan loading
+
+                if (score !== null && totalQuestions !== null) {
+                    finalScoreEl.textContent = `${score}/${totalQuestions}`;
+                } else {
+                    finalScoreEl.textContent = "Error"; // Tampilkan error jika data tidak ada
+                    console.error("Skor atau total pertanyaan tidak ditemukan di localStorage");
+                }
+
+                scoreSection.classList.remove('hidden'); // Tampilkan hasil
+                scoreSection.classList.add('fade-in'); // Terapkan animasi fade-in
+
+                // (Opsional) Hapus skor dari localStorage setelah ditampilkan
+                // localStorage.removeItem('quizScore');
+                // localStorage.removeItem('quizTotalQuestions');
+
+            }, 3000); // Tunggu 3 detik (3000 milidetik)
+        });
+    </script>
+
+</body>
+</html>
