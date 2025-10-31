@@ -1,7 +1,0 @@
-Flask
-flask-cors
-firebase-admin
-requests
-Pillow
-numpy
-gunicorn
